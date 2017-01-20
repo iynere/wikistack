@@ -1,12 +1,12 @@
 'use strict'
-const Sequelize = require('sequelize');
-const db = new Sequelize('postgres://localhost:5432/wikistack');
+
 const express = require('express');
 const app = express();
 const morgan = require('morgan');
 const nunjucks = require('nunjucks');
-const makesRouter = require('./routes');
+const router = require('./routes');
 const bodyParser = require('body-parser');
+const models = require('./models');
 
 // MIDDLEWARE
 var env = nunjucks.configure('views', {noCache: true});
@@ -25,3 +25,14 @@ app.use(bodyParser.urlencoded({extended: false}));
 const server = app.listen(5432, () => {
 	console.log('wikistax server listening on port 5432');
 });
+
+models.User.sync({})
+.then(() => {
+    return models.Page.sync({});
+})
+.then(() => {
+    server.listen(5432, function () {
+        console.log('wikistax server listening on port 5432');
+    });
+})
+.catch(console.error);
