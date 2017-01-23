@@ -8,21 +8,35 @@ const Page = db.define('page', {
 	title: {type: Sequelize.STRING, allowNull: false},
 	urlTitle: {type: Sequelize.STRING, allowNull: false},
 	content: {type: Sequelize.TEXT, allowNull: false},
-	status: {type: Sequelize.ENUM('open', 'closed')}
-	// , date: {type: Sequelize.DATE, defaultValue: Sequelize.NOW, allowNULL: false}
+	status: {type: Sequelize.ENUM('open', 'closed')},
+	tags: {type: Sequelize.ARRAY(Sequelize.STRING), allowNull: true}
 }, {
 	hooks: {
-		beforeValidate: function(page) {
+		beforeValidate: page => {
 			
 			page.urlTitle = page.title.replace(/[^\w\s]/g, '').replace(/\s+/g, '_');
 		}
-	}
-}, {
+	},
 	getterMethods: {
 		route: () => {
-		return `/wiki/${this.urlTitle}`;
+			return `/wiki/${this.urlTitle}`;
 		} 
-	}
+	},
+	instanceMethods: {
+		findSimilar: function() {
+			var similar = Page.findAll({
+				where: {
+					id: {
+						$ne: this.id
+					},
+					tags: {
+						$overlap: this.tags
+					}
+				}
+			})
+			return similar;
+		}
+	}	
 });
 
 const User = db.define('user', {
@@ -30,6 +44,8 @@ const User = db.define('user', {
 	name: {type: Sequelize.STRING, allowNull: false},
 	email: {type: Sequelize.STRING, allowNull: false, isEmail: true}
 });
+
+Page.belongsTo(User, { as: 'author' });
 
 module.exports = {
 	Page: Page,

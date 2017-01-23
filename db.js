@@ -26,9 +26,9 @@ const server = app.listen(3000, () => {
 	console.log('wikistax server listening on port 3000');
 });
 
-models.User.sync({})
+models.User.sync({/*force: true*/})
 .then(() => {
-    return models.Page.sync({});
+    return models.Page.sync({/*force: true*/});
 })
 .then(() => {
     server.listen(3000, function () {
